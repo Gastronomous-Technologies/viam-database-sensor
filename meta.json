@@ -1,12 +1,12 @@
 {
-  "module_id": "bill:viam-database-sensor",
+  "module_id": "gastronomous:viam-database-sensor",
   "visibility": "public",
-  "url": "https://github.com/williamjhyland/viam-database-sensor",
+  "url": "https://github.com/Gastronomous-Technologies/viam-database-sensor",
   "description": "This project demonstrates the integration of a sensor component with a MySQL database, enabling the sensor to read data from the database and perform specific actions based on the retrieved data. This setup is ideal for applications requiring database interactions through sensor-based triggers.",
   "models": [
     {
       "api": "rdk:component:sensor",
-      "model": "bill:db:mysql-select"
+      "model": "gastronomous:db:mysql-filter"
     }
   ],
   "entrypoint": "run.sh"
