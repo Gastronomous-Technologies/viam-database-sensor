@@ -13,7 +13,7 @@ from mysql.connector.aio import connect
 LOGGER = getLogger(__name__)
 
 class MySensor(Sensor):
-    MODEL: ClassVar[Model] = Model(ModelFamily("bill", "db"), "mysql-select")
+    MODEL: ClassVar[Model] = Model(ModelFamily("gastronomous", "db"), "mysql-filter")
     REQUIRED_ATTRIBUTES = ["user", "password", "host", "database"]
     
     def __init__(self, name: str):
