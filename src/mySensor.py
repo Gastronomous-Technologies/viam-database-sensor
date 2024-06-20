@@ -52,7 +52,7 @@ class MySensor(Sensor):
             await self.run_query(self.queries.get('action_query'))
             return results
         else:
-            return await self.run_query(self.queries.get('default_query'))  
+            return await self.run_query(self.queries.get('filter_query'))  
 
     async def run_query(self, query: str) -> Dict[str, Any]:
         async with await connect(**self.database_config) as conn:
@@ -61,15 +61,10 @@ class MySensor(Sensor):
                 if query.lower().startswith("select"):
                     rows = await cursor.fetchall()
                     keys = [column[0] for column in cursor.description]
-                    primary_key_query = f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = '{self.database_config['database']}' AND TABLE_NAME = '{self.table}' AND CONSTRAINT_NAME = 'PRIMARY'"
-                    await cursor.execute(primary_key_query)
-                    primary_key_row = await cursor.fetchone()
-                    if primary_key_row:
-                        primary_key = primary_key_row[0]
-                    else:
-                        primary_key = None 
                     await cursor.close()
-                    return self.process_readings(primary_key, keys, rows)
+                    row = rows[0]
+                    readings = {keys[i]: str(row[i]) for i in range(len(row))}
+                    return readings
                 else:
                     await conn.commit()
                     await cursor.close()
@@ -77,10 +72,7 @@ class MySensor(Sensor):
             
     def process_readings(self, primary_key, keys, query_result) -> Dict[str, Any]:
         readings = {}
-    
-        if primary_key not in keys:
-            LOGGER.error(f"Primary key '{primary_key}' not found in keys: {keys}")
-            return readings
+
         
         key_index = keys.index(primary_key)
 
