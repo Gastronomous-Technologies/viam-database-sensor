@@ -15,9 +15,9 @@ LOGGER = getLogger(__name__)
 class MySensor(Sensor):
     MODEL: ClassVar[Model] = Model(ModelFamily("gastronomous", "db"), "mysql-filter")
     REQUIRED_ATTRIBUTES = ["user", "password", "host", "database"]
-    
+
     def __init__(self, name: str):
-        super().__init__(name)    
+        super().__init__(name)
 
     @classmethod
     def new(
@@ -52,7 +52,7 @@ class MySensor(Sensor):
             await self.run_query(self.queries.get('action_query'))
             return results
         else:
-            return await self.run_query(self.queries.get('filter_query'))  
+            return await self.run_query(self.queries.get('filter_query'))
 
     async def run_query(self, query: str) -> Dict[str, Any]:
         async with await connect(**self.database_config) as conn:
@@ -60,6 +60,11 @@ class MySensor(Sensor):
                 await cursor.execute(query)
                 if query.lower().startswith("select"):
                     rows = await cursor.fetchall()
+                    if not rows:
+                        LOGGER.debug("Query returned no rows")
+                        await cursor.close()
+                        raise NoCaptureToStoreError
+                        return {}
                     keys = [column[0] for column in cursor.description]
                     await cursor.close()
                     row = rows[0]
@@ -69,15 +74,3 @@ class MySensor(Sensor):
                     await conn.commit()
                     await cursor.close()
                     return {}
-            
-    def process_readings(self, primary_key, keys, query_result) -> Dict[str, Any]:
-        readings = {}
-
-        
-        key_index = keys.index(primary_key)
-
-        for row in query_result:
-            row_data = {keys[i]: str(row[i]) for i in range(len(row)) if i != key_index}
-            readings[str(row[key_index])] = row_data
-
-        return readings
