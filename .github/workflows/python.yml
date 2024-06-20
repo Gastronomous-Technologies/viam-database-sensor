@@ -14,12 +14,12 @@ jobs:
   build:
     strategy:
       matrix:
-        runner: [ ubuntu-latest, macos-latest ]
+        runner: [ ubuntu-latest ]
         arch: [ amd64, arm64 ]
     runs-on: ${{ matrix.runner }}
     env:
-      os: ${{contains(matrix.runner, 'ubuntu') && 'linux' || contains(matrix.runner, 'macos') && 'macos' || 'unknown'}}
-      GOOS: ${{contains(matrix.runner, 'ubuntu') && 'linux' || contains(matrix.runner, 'macos') && 'darwin' || 'unknown'}}
+      os: 'linux'
+      GOOS: 'linux'
       GOARCH: ${{ matrix.arch }}
     steps:
     - name: Check out code
@@ -55,13 +55,13 @@ jobs:
   publish:
     strategy:
       matrix:
-        runner: [ ubuntu-latest, macos-latest ]
+        runner: [ ubuntu-latest ]
         arch: [ amd64, arm64 ]
     runs-on: ubuntu-latest
     needs: [build]
     env:
-      os: ${{contains(matrix.runner, 'ubuntu') && 'linux' || contains(matrix.runner, 'macos') && 'macos' || 'unknown'}}
-      GOOS: ${{contains(matrix.runner, 'ubuntu') && 'linux' || contains(matrix.runner, 'macos') && 'darwin' || 'unknown'}}
+      os: 'linux'
+      GOOS: 'linux'
       GOARCH: ${{ matrix.arch }}
     if: github.event_name == 'release'
     steps:
@@ -72,7 +72,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: database-sensor-${{ env.os }}-${{ env.GOARCH }}
-      
+
     - name: Upload
       uses: viamrobotics/upload-module@main
       with:
